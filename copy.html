@@ -1,0 +1,58 @@
+<!-- script and css to create 'copy to clipboard' functionality -->
+<script language="javascript">
+    var style = document.createElement('style');
+    style.type = 'text/css';
+    style.innerHTML = '\
+.codeContent{border:1px solid;position:relative}\
+.copyButton{visibility:hidden;height:1.5em;width:1.5em;cursor:pointer;position:absolute;top:3px;right:3px;}\
+.codeContent:hover .copyButton {visibility:visible;}\
+.flash {-webkit-animation-name:flash-animation;-webkit-animation-duration:0.5s;animation-name:flash-animation;animation-duration:0.5s;}\
+@-webkit-keyframes flash-animation{from{filter:invert(100%);}to{filter:default}}\
+@keyframes flash-animation{from{filter:invert(100%);}to{filter:default}}';
+
+    document.getElementsByTagName('head')[0].appendChild(style);
+    var link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css';
+    document.getElementsByTagName('head')[0].appendChild(link);
+
+    const forEach = function (array, callback, scope) {
+        for (var i = 0; i < array.length; i++) {
+            callback.call(scope, array[i]);
+        }
+    };
+
+    const copyCode = function(event) {
+        const target = event.target;
+        target.classList.add('flash');
+        setTimeout(function() {
+            target.classList.remove('flash');
+        }, 500);
+
+        var code = '';
+        const codeLines = event.target.parentNode.getElementsByClassName('line');
+        forEach(codeLines, function(element) {
+            code += element.textContent.replace(/\s/g,' ') + '\n';
+        });
+
+        const text = document.createElement('textarea');
+        text.value = code;
+        text.setAttribute('readonly', '');
+        text.style.position = 'absolute';
+        text.style.left = '-9999px';
+
+        document.body.appendChild(text);
+        text.select();
+        document.execCommand('copy');
+        document.body.removeChild(text);
+    };
+
+    const codeBlocks =  document.getElementsByClassName('codeContent');
+    forEach(codeBlocks, function (element) {
+        const copyDiv = document.createElement('img');
+        copyDiv.src = 'data:image/png;base64,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';
+        copyDiv.className = 'copyButton';
+        copyDiv.onclick = copyCode;
+        element.appendChild(copyDiv);
+    });
+</script>
